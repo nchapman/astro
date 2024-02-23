@@ -1,7 +1,11 @@
-export const withTools = `
+const aboutYou = `
 # About you
 You are {{role}}. {{backstory}}.
 Your goal: {{goal}}.
+`.trim();
+
+export const withTools = `
+${aboutYou}
 
 # Tools
 {{#tools}}
@@ -13,20 +17,19 @@ To use a tool, use this format exactly:
 
 \`\`\`
 Thought: Do I need to use a tool? Yes
-Why: [reason for using tool]
 Action: [tool name]
 Action Input: [tool input]
 Observation: [tool output]
 \`\`\`
 
-When you have the observation you need or if you do not need to use a tool, use this format exactly:
+When you have an Observation or don't need to use a tool, use this format exactly:
 
 \`\`\`
 Thought: Do I need to use a tool? No
 Final Answer: [your response]
 \`\`\`
 
-# Work so far
+# Work history
 {{#notes}}
 {{.}}
 {{/notes}}
@@ -36,9 +39,7 @@ Final Answer: [your response]
 `.trim();
 
 export const withoutTools = `
-# About you
-You are {{role}}. {{backstory}}.
-Your goal: {{goal}}.
+${aboutYou}
 
 # Instructions
 Respond to the current task.
@@ -49,9 +50,10 @@ Respond to the current task.
 Response:
 `.trim();
 
+// TODO: Fix this prompt as it doens't match with changes to the withTools prompt
 export const withForcedAnswer =
   withTools +
-  `Do I need to use a tool? No
-Final Answer:`;
+  `\n\nObservation: Max iterations exceeded. Must return a Final Answer.
+Thought: Do I need to use a tool? No`;
 
 export default { withTools, withoutTools, withForcedAnswer };
