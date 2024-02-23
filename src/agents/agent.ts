@@ -33,35 +33,30 @@ class Agent {
       let prompt = this.getPrompt(exceedsMaxIter, { input, notes, ...this });
       let response = await this.getResponse(prompt);
 
-      // Clean up the response
-      // if (exceedsMaxIter) {
-      //   response = "Final Answer: " + response;
-      // }
-
       const result = parseResponse(response);
 
       if (this.verbose) {
-        console.log("Iteration", i);
-        console.log("Prompt:", prompt);
-        console.log("Response:", response);
-        console.log("Result:", result);
+        console.log("= Prompt =\n", prompt);
+        console.log("= Response =\n", response);
+        console.log("= Result =\n", result);
+        console.log("Iteration:", i);
       }
 
-      if (result.action) {
+      if (result.finalAnswer) {
+        output = result.finalAnswer;
+      } else if (result.action) {
         const tool = this.tools.find((t) => t.name === result.action);
 
         if (tool) {
-          const observation = tool.call(result.actionInput);
+          const actionOutput = tool.call(result.actionInput);
 
           // Add the observation to the notes
-          notes.push(`${response}\nObservation: ${observation}`);
+          notes.push(`${response}\nAction Output: ${actionOutput}`);
         } else {
           // TODO: Better error handling
           // This could push an error into notes and continue
           output = "Sorry, I don't have that tool.";
         }
-      } else if (result.finalAnswer) {
-        output = result.finalAnswer;
       } else {
         // TODO: Better error handling
         output = "Sorry, something went wrong.";
@@ -98,7 +93,7 @@ class Agent {
     const response = await this.llm.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
       model: "llamafile",
-      stop: "\nObservation:",
+      stop: "\nAction Output:",
     });
 
     // TODO: Better error handling

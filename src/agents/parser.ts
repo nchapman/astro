@@ -2,7 +2,7 @@ type ResponseState =
   | "initial"
   | "action"
   | "actionInput"
-  | "observation"
+  | "actionOutput"
   | "thought"
   | "finalAnswer";
 
@@ -11,7 +11,7 @@ type ParsedResponse = {
   thought: string | null;
   action: string | null;
   actionInput: string | null;
-  observation: string | null;
+  actionOutput: string | null;
   finalAnswer: string | null;
 };
 
@@ -24,7 +24,7 @@ export function parseResponse(response: string): ParsedResponse {
     initial: null,
     action: null,
     actionInput: null,
-    observation: null,
+    actionOutput: null,
     thought: null,
     finalAnswer: null,
   };
@@ -33,7 +33,7 @@ export function parseResponse(response: string): ParsedResponse {
   const determineState = (line: string): ResponseState => {
     if (line.startsWith("Action:")) return "action";
     if (line.startsWith("Action Input:")) return "actionInput";
-    if (line.startsWith("Observation:")) return "observation";
+    if (line.startsWith("Action Output:")) return "actionOutput";
     if (line.startsWith("Thought:")) return "thought";
     if (line.startsWith("Final Answer:")) return "finalAnswer";
     return currentState; // No state change

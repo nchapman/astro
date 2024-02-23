@@ -8,6 +8,8 @@ export const withTools = `
 ${aboutYou}
 
 # Tools
+Here's the list of available tools. Most tools should only be used once.
+
 {{#tools}}
 - {{name}}: {{description}}
 {{/tools}}
@@ -19,23 +21,25 @@ To use a tool, use this format exactly:
 Thought: Do I need to use a tool? Yes
 Action: [tool name]
 Action Input: [tool input]
-Observation: [tool output]
+Action Output: [tool output]
 \`\`\`
 
-When you have an Observation or don't need to use a tool, use this format exactly:
+If you don't need to use a tool, use this format exactly:
 
 \`\`\`
 Thought: Do I need to use a tool? No
 Final Answer: [your response]
 \`\`\`
 
-# Work history
-{{#notes}}
-{{.}}
-{{/notes}}
-
 # Current task
 {{input}}
+
+{{#notes}}
+# Summary of your work so far
+{{#.}}
+{{.}}
+{{/.}}
+{{/notes}}
 `.trim();
 
 export const withoutTools = `
@@ -44,10 +48,15 @@ ${aboutYou}
 # Instructions
 Respond to the current task.
 
+# Format
+All responses should be in this format:
+
+\`\`\`
+Final Answer: [your response]
+\`\`\`
+
 # Current task
 {{input}}
-
-Response:
 `.trim();
 
 // TODO: Fix this prompt as it doens't match with changes to the withTools prompt
