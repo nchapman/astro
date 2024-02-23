@@ -59,7 +59,6 @@ Final Answer: [your response]
 {{input}}
 `.trim();
 
-// TODO: Fix this prompt as it doens't match with changes to the withTools prompt
 export const withForcedAnswer =
   withTools +
   `\n\nObservation: Max iterations exceeded. Must return a Final Answer.

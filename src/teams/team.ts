@@ -1,25 +1,35 @@
 import OpenAI from "openai";
-import Tool from "../tool";
+import Agent from "../agents/agent";
 import prompts from "./prompts";
 import { renderTemplate } from "../utils";
 import { parseResponse } from "../parser";
 
-class Agent {
-  role: string;
+interface TeamOptions {
   goal: string;
   backstory: string;
+  plan?: string;
   llm: OpenAI;
-  tools: Tool[];
+  agents: Agent[];
+  maxIter?: number;
+  verbose?: boolean;
+}
+
+class Team {
+  goal: string;
+  backstory: string;
+  plan?: string;
+  llm: OpenAI;
+  agents: Agent[];
   maxIter: number;
   verbose?: boolean;
 
-  constructor(options: AgentOptions) {
-    this.role = options.role;
+  constructor(options: TeamOptions) {
     this.goal = options.goal;
     this.backstory = options.backstory;
     this.llm = options.llm;
-    this.tools = options.tools || [];
-    this.maxIter = options.maxIter || Math.max(this.tools.length, 5);
+    this.plan = options.plan;
+    this.agents = options.agents;
+    this.maxIter = options.maxIter || Math.max(this.agents.length, 5);
     this.verbose = options.verbose;
   }
 
@@ -39,23 +49,25 @@ class Agent {
         console.log("= Prompt =\n", prompt);
         console.log("= Response =\n", response);
         console.log("= Result =\n", result);
-        console.log("Agent iteration:", i);
+        console.log("Team iteration:", i);
       }
 
       if (result.finalAnswer) {
         output = result.finalAnswer;
       } else if (result.action) {
-        const tool = this.tools.find((t) => t.name === result.action);
+        const agent = this.agents.find((t) => t.role === result.action);
 
-        if (tool) {
-          const actionOutput = await tool.call(result.actionInput);
+        if (agent) {
+          const actionOutput = await agent.call(
+            result.actionInput || "No instructions provided."
+          );
 
           // Add the observation to the notes
           notes.push(`${response}\nAction Output: ${actionOutput}`);
         } else {
           // TODO: Better error handling
           // This could push an error into notes and continue
-          output = "Sorry, I don't have that tool.";
+          output = "Sorry, I don't have that agent.";
         }
       } else {
         // TODO: Better error handling
@@ -76,23 +88,17 @@ class Agent {
       // Force an answer if the max iterations have been exceeded
       prompt = prompts.withForcedAnswer;
     } else {
-      if (this.tools.length > 0) {
-        // Use the prompt with tools if the agent has tools
-        prompt = prompts.withTools;
-      } else {
-        // Use simple prompt if the agent has no tools
-        prompt = prompts.withoutTools;
-      }
+      prompt = prompts.withAgents;
     }
 
     // Render the prompt using the provided data
     return renderTemplate(prompt, {
       input,
       notes,
-      role: this.role,
       backstory: this.backstory,
       goal: this.goal,
-      tools: this.tools,
+      agents: this.agents,
+      plan: this.plan,
     });
   }
 
@@ -108,14 +114,4 @@ class Agent {
   }
 }
 
-interface AgentOptions {
-  role: string;
-  goal: string;
-  backstory: string;
-  llm: OpenAI;
-  tools?: Tool[];
-  maxIter?: number;
-  verbose?: boolean;
-}
-
-export default Agent;
+export default Team;
