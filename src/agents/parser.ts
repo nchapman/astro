@@ -1,20 +1,3 @@
-type ResponseState =
-  | "initial"
-  | "action"
-  | "actionInput"
-  | "actionOutput"
-  | "thought"
-  | "finalAnswer";
-
-type ParsedResponse = {
-  initial: string | null;
-  thought: string | null;
-  action: string | null;
-  actionInput: string | null;
-  actionOutput: string | null;
-  finalAnswer: string | null;
-};
-
 export function parseResponse(response: string): ParsedResponse {
   // Initial state
   let currentState: ResponseState = "initial";
@@ -42,6 +25,7 @@ export function parseResponse(response: string): ParsedResponse {
   // Split the response into lines and process each line
   response.split("\n").forEach((line) => {
     const newState = determineState(line);
+
     if (newState !== currentState) {
       currentState = newState; // Update the state
       // Initialize the value for this key, removing the key part from the line
@@ -58,3 +42,20 @@ export function parseResponse(response: string): ParsedResponse {
 
   return result;
 }
+
+type ResponseState =
+  | "initial"
+  | "action"
+  | "actionInput"
+  | "actionOutput"
+  | "thought"
+  | "finalAnswer";
+
+type ParsedResponse = {
+  initial: string | null;
+  thought: string | null;
+  action: string | null;
+  actionInput: string | null;
+  actionOutput: string | null;
+  finalAnswer: string | null;
+};

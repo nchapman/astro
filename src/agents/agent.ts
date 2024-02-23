@@ -30,7 +30,7 @@ class Agent {
 
     while (output === undefined) {
       let exceedsMaxIter = i >= this.maxIter;
-      let prompt = this.getPrompt(exceedsMaxIter, { input, notes, ...this });
+      let prompt = this.getPrompt(input, notes, exceedsMaxIter);
       let response = await this.getResponse(prompt);
 
       const result = parseResponse(response);
@@ -69,7 +69,7 @@ class Agent {
     return output || "Sorry, something went wrong.";
   }
 
-  getPrompt(exceedsMaxIter: boolean, data: any) {
+  getPrompt(input: string, notes: string[], exceedsMaxIter: boolean) {
     let prompt;
 
     if (exceedsMaxIter) {
@@ -86,7 +86,14 @@ class Agent {
     }
 
     // Render the prompt using the provided data
-    return renderTemplate(prompt, data);
+    return renderTemplate(prompt, {
+      input,
+      notes,
+      role: this.role,
+      backstory: this.backstory,
+      goal: this.goal,
+      tools: this.tools,
+    });
   }
 
   async getResponse(prompt: string) {
