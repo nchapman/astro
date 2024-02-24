@@ -40,10 +40,42 @@ class Team {
 
     while (output === undefined) {
       let exceedsMaxIter = i >= this.maxIter;
-      let prompt = this.getPrompt(input, notes, exceedsMaxIter);
-      let response = await this.getResponse(prompt);
+      let currentPlan = this.plan;
 
-      const result = parseResponse(response);
+      // Start by creating a plan if one wasn't provided
+      if (!currentPlan) {
+        let planPrompt = this.getPlanPrompt(input);
+        let planResponse = await this.getResponse(planPrompt);
+        let planResult = parseResponse(planResponse);
+
+        if (this.verbose) {
+          console.log("= Plan Prompt =\n", planPrompt);
+          console.log("= Plan Response =\n", planResponse);
+          console.log("= Plan Result =\n", planResult);
+        }
+
+        // If agents aren't required, then return the final answer
+        if (planResult.thought?.includes("No") && planResult.finalAnswer) {
+          output = planResult.finalAnswer;
+          break;
+        }
+        // If agents are required, then set the plan
+        else if (
+          planResult.thought?.includes("Yes") &&
+          planResult.finalAnswer
+        ) {
+          currentPlan = planResult.finalAnswer;
+        }
+        // If the plan is still undefined, then throw an error
+        else {
+          throw new Error("No plan created.");
+        }
+      }
+
+      // Use the plan to guide the conversation
+      let prompt = this.getPrompt(input, currentPlan, notes, exceedsMaxIter);
+      let response = await this.getResponse(prompt);
+      let result = parseResponse(response);
 
       if (this.verbose) {
         console.log("= Prompt =\n", prompt);
@@ -81,7 +113,12 @@ class Team {
     return output || "Sorry, something went wrong.";
   }
 
-  getPrompt(input: string, notes: string[], exceedsMaxIter: boolean) {
+  getPrompt(
+    input: string,
+    plan: string,
+    notes: string[],
+    exceedsMaxIter: boolean
+  ) {
     let prompt;
 
     if (exceedsMaxIter) {
@@ -98,7 +135,16 @@ class Team {
       backstory: this.backstory,
       goal: this.goal,
       agents: this.agents,
-      plan: this.plan,
+      plan,
+    });
+  }
+
+  getPlanPrompt(input: string) {
+    return renderTemplate(prompts.makeAPlan, {
+      input,
+      backstory: this.backstory,
+      goal: this.goal,
+      agents: this.agents,
     });
   }
 

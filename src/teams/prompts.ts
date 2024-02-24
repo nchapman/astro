@@ -1,19 +1,48 @@
 const aboutYou = `
 # About you
-You manage a team of agents. You can get work with agents to complete your task or give a final answer immediately.
-{{backstory}}.
-Your goal: {{goal}}.
+{{backstory}}
+Your goal: {{goal}}
 `.trim();
 
-export const withAgents = `
-${aboutYou}
-
+const agentInstructions = `
 # Agents
 Here's the list of available agents. Most agents should only be used once.
 
 {{#agents}}
 - {{role}}: {{goal}}
 {{/agents}}
+`.trim();
+
+export const makeAPlan = `
+${aboutYou}
+
+${agentInstructions}
+
+# Current message
+{{input}}
+
+# Instructions
+Write a step-by-step plan to respond to the message using the provided agents.
+You can use one or more agents. 
+Use this format exactly:
+
+\`\`\`
+Thought: Do I need to use agents? Yes.
+Final Answer: [your step-by-step plan]
+\`\`\`
+
+If you don't need to use agents, use this format exactly:
+
+\`\`\`
+Thought: Do I need to use agents? No.
+Final Answer: [your response]
+\`\`\`
+`;
+
+export const withAgents = `
+${aboutYou}
+
+${agentInstructions}
 
 # Instructions
 To use an agent, use this format exactly:
@@ -32,19 +61,21 @@ Thought: Do I need to use an agent? No
 Final Answer: [your response]
 \`\`\`
 
+# Current message
+{{input}}
+
 {{#plan}}
-# Execute this plan using the provided agents
+# Your Plan
+Follow this plan exactly:
 {{.}}
 {{/plan}}
 
-# Current task
-{{input}}
-
+# Steps taken so far
+{{^notes}}
+No steps have been taken yet. Follow the plan.
+{{/notes}}
 {{#notes}}
-# Summary of your work so far
-{{#.}}
 {{.}}
-{{/.}}
 {{/notes}}
 `.trim();
 
@@ -53,4 +84,4 @@ export const withForcedAnswer =
   `\n\nObservation: Max iterations exceeded. Must return a Final Answer.
 Thought: Do I need to use an agent? No`;
 
-export default { withAgents, withForcedAnswer };
+export default { makeAPlan, withAgents, withForcedAnswer };

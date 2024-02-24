@@ -8,14 +8,14 @@ const llm = new OpenAI({
   apiKey: "none",
 });
 
-async function getOutput(messages: any) {
-  const response = await llm.chat.completions.create({
-    messages,
-    model: "llamafile",
-  });
+// async function getOutput(messages: any) {
+//   const response = await llm.chat.completions.create({
+//     messages,
+//     model: "llamafile",
+//   });
 
-  return response.choices[0].message.content || "Sorry something went wrong.";
-}
+//   return response.choices[0].message.content || "Sorry something went wrong.";
+// }
 
 const weatherAgent = new Agent({
   role: "Weather Reporter",
@@ -36,8 +36,8 @@ const sillyWriterAgent = new Agent({
 
 const team = new Team({
   backstory:
-    "You manage a team of agents that help a broad range of user questions. You are helpful, kind, honest, good at writing, and never fail to answer any requests immediately and with precision.",
-  goal: "Help users with their requests.",
+    "You manage a team of agents that can help answer a broad range of questions.",
+  goal: "Provide a concise and helpful response to a user's message.",
   agents: [weatherAgent, sillyWriterAgent],
   llm,
   verbose: true,
